@@ -33,11 +33,20 @@ exports.postSignUp = (req, res, next) => {
                     };
                     Auth.saveUser(user)
                         .then(resData => {
-                            console.log(resData);
-                            return res.status(201).json({
-                                message: 'User created',
-                                userId: resData.user_id
-                            })
+                            const singUpToken = jwt.sign({
+                                email: user.email,
+                                user_id: resData.user_id
+                            }, secret, 
+                            { expiresIn: '1h'});
+                            Auth.signUpEmail(user.email, singUpToken)
+                                .then(() => {
+                                    return res.status(201).json({
+                                        message: 'User created, please verify email address',
+                                    })
+                                }).catch(err => {
+                                    err.statusCode = 500;
+                                    next(err)
+                                })
                         }).catch(err => {
                             if (!err.statusCode) {
                             err.statusCode = 500;
@@ -111,4 +120,18 @@ exports.postLogin = (req, res, next) => {
             }
             next(err);
         })
+}
+
+exports.verifyEmail = (req, res, next) => {
+    const email = req.email;
+    Auth.verifyUserEmail(email)
+        .then(() => {
+            return res.status(200).send(`<p>Your Email has been verified, Please visit the following link to login: <a href='http://localhost:4200/login'>Link</a></p>`)
+        }).catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        })
+
 }

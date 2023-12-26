@@ -5,17 +5,17 @@ const router = express.Router();
 const isAuth = require('../middleware/is-auth');
 
 
-router.get('/posts', isAuth, feedController.getPosts);
+router.get('/posts', isAuth.verifyUser, feedController.getPosts);
 
-router.post('/post', isAuth,
+router.post('/post', isAuth.verifyUser,
 [
     body('post_title').trim().isLength({ min: 4 }),
     body('post_content').trim()
 ],
 feedController.postPost)
 
-router.get('/post/:postId', isAuth, feedController.getPost)
+router.get('/post/:postId', isAuth.verifyUser, feedController.getPost)
 
-router.delete('/post/:postId', isAuth, feedController.deletePost)
+router.delete('/post/:postId', isAuth.verifyUser, feedController.deletePost)
 
 module.exports = router;

@@ -1,5 +1,6 @@
 
 const db = require('../util/database');
+const transport = require('../util/email-service');
 
 module.exports = class Posts {
     static saveUser(user) {
@@ -13,5 +14,22 @@ module.exports = class Posts {
 
     static loginUser(email) {
         return db.oneOrNone('SELECT * FROM users WHERE email = $1', [email])
+    }
+
+    static signUpEmail(email, token) {
+        console.log(token);
+        return transport.sendMail({
+            from: 'kevbousader@gmail.com',
+            to: email,
+            subject: 'Email confirmation',
+            html: `
+            <p>You have successfully register to Gym-Match</p>
+            <p>Click this link: <a href="http://localhost:8080/auth/verify-email/${token}">link</a> to confirm your account</p>
+            `
+        })
+    }
+
+    static verifyUserEmail(email) {
+        return db.oneOrNone('UPDATE users SET verified = true', [email])
     }
 }
