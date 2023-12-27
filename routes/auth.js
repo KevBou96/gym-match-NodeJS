@@ -18,6 +18,11 @@ router.post('/login', [
 ]
 , authController.postLogin)
 
+router.post('/forgot-password', [
+    body('email').trim().isEmail().normalizeEmail()
+]
+, authController.forgotPassword)
+
 router.get('/verify-email/:token', isAuth.verifyEmail, authController.verifyEmail)
 
 module.exports = router;

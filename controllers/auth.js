@@ -133,5 +133,40 @@ exports.verifyEmail = (req, res, next) => {
             }
             next(err);
         })
+}
 
+exports.forgotPassword = (req, res, next) => {
+    const email = req.body.email;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        const error = new Error('Validation failed');
+        error.statusCode = 422;
+        throw error;
+    }
+    Auth.getEmail(email).then(responseData => {
+        if (!responseData) {
+            const error = new Error('Email do not exists');
+            error.statusCode = 404;
+            throw error
+        }
+        const token = jwt.sign({
+            email: responseData.email
+        }, secret)
+        Auth.resetPasswordEmail(email, token)
+            .then(() => {
+                return res.status(200).json({
+                    message: 'success'
+                })
+            }).catch(err => {
+                if (!err.statusCode) {
+                    err.statusCode = 500;
+                }
+                next(err);
+            })
+    }).catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    })
 }
