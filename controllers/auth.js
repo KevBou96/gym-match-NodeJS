@@ -151,7 +151,8 @@ exports.forgotPassword = (req, res, next) => {
         }
         const token = jwt.sign({
             email: responseData.email
-        }, secret)
+        }, secret
+        , {expiresIn: '1h'})
         Auth.resetPasswordEmail(email, token)
             .then(() => {
                 return res.status(200).json({
@@ -169,4 +170,20 @@ exports.forgotPassword = (req, res, next) => {
         }
         next(err);
     })
+}
+
+exports.getResetPassword = (req, res, next) => {
+    console.log(req.email);
+    const email = req.email;
+    res.status(200).json({
+        message: 'success',
+        email: email
+    })
+}
+
+exports.postResetPassword = (req, res, next) => {
+    const email = req.email;
+    const password = req.body.password;
+
+    console.log(password);
 }

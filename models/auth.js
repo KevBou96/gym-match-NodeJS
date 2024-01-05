@@ -41,8 +41,12 @@ module.exports = class Posts {
             subject: 'Reset password',
             html: `
             <p>You have requested a password reset.</p>
-            <p>Follow this: <a href="http://localhost:8080/auth/reset-password/${token}">link</a> to reset your password</p>
+            <p>Follow this: <a href="http://localhost:4200/change-password/${token}">link</a> to reset your password</p>
             `
         })
+    }
+
+    static resetPassword(email, password) {
+        
     }
 }

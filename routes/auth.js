@@ -25,4 +25,8 @@ router.post('/forgot-password', [
 
 router.get('/verify-email/:token', isAuth.verifyEmail, authController.verifyEmail)
 
+router.get('/reset-password', isAuth.verifyResetPassword, authController.getResetPassword)
+
+router.post('/reset-password', isAuth.verifyResetPassword, authController.postResetPassword)
+
 module.exports = router;

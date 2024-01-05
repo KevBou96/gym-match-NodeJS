@@ -37,6 +37,18 @@ exports.verifyEmail = (req, res, next) => {
     const decodeToken = authToken(token);
     req.email = decodeToken.email;
     console.log(decodeToken);
-    next()
-    
+    next();   
+}
+
+exports.verifyResetPassword = (req, res, next) => {
+    const authHeader = req.get('Authorization');
+    if (!authHeader) {
+        const error = new Error('Not unthenticated');
+        error.statusCode = 401;
+        throw error
+    }
+    let token = authHeader.split(' ')[1];
+    const decodeToken = authToken(token);
+    req.email = decodeToken.email;
+    next();
 }
