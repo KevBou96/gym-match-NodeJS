@@ -34,7 +34,6 @@ module.exports = class Posts {
     }
 
     static resetPasswordEmail(email, token) {
-        console.log(token);
         return transport.sendMail({
             from: 'kevbousader@gmail.com',
             to: email,
@@ -47,6 +46,6 @@ module.exports = class Posts {
     }
 
     static resetPassword(email, password) {
-        
+        return db.none('UPDATE users SET password = $1 WHERE email = $2', [password, email])
     }
 }

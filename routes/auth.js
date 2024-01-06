@@ -29,4 +29,6 @@ router.get('/reset-password', isAuth.verifyResetPassword, authController.getRese
 
 router.post('/reset-password', isAuth.verifyResetPassword, authController.postResetPassword)
 
+router.get('/verify-user-auth', isAuth.verifyUser, authController.verifyUserAuth)
+
 module.exports = router;

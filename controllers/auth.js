@@ -183,7 +183,41 @@ exports.getResetPassword = (req, res, next) => {
 
 exports.postResetPassword = (req, res, next) => {
     const email = req.email;
-    const password = req.body.password;
+    const newPassword = req.body.password;
+    Auth.getEmail(email).then(emailRes => {
+        if (!emailRes) {
+            const error = new Error('An unknown error occurred');
+            error.statusCode = 404;
+            throw error
+        }
+        bcrypt.hash(newPassword, 12).then(newHashedPassword => {
+            Auth.resetPassword(email, newHashedPassword).then(() => {
+                res.status(201).json({
+                    message: 'Password has been changed'
+                })
+            }).catch(err => {
+                if (!err.statusCode) {
+                    err.statusCode = 500;
+                }
+                next(err)
+            })
+        }).catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err)
+        })
+    }).catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err)
+    })
+}
 
-    console.log(password);
+exports.verifyUserAuth = (req, res, next) => {
+    const userId = req.userId;
+    res.status(200).json({
+        userId
+    })
 }
