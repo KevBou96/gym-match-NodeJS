@@ -22,7 +22,8 @@ exports.getPosts = (req, res, next) => {
 exports.postPost = (req, res, next) => {
     const title = req.body.post_title;
     const content = req.body.post_content;
-    const user_id = req.userId;
+    const userId = +req.body.user_id;
+    const verifiedUserId = req.userId;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {  //if errors
         const error = new Error('Error: Validation Failed');
@@ -35,17 +36,25 @@ exports.postPost = (req, res, next) => {
         throw error
     }
     const imgurl = req.file.path.replace("\\", "/");
-    Posts.createPost(title, content, imgurl, user_id).then((response) => {
-        console.log(response);
-        res.status(201).json({
-            message: 'Post created succesfully',
+    console.log([userId, verifiedUserId]);
+    if (userId === verifiedUserId) {
+        Posts.createPost(title, content, imgurl, verifiedUserId).then((response) => {
+            console.log(response);
+            res.status(201).json({
+                message: 'Post created succesfully',
+            })
+        }).catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
         })
-    }).catch(err => {
-        if (!err.statusCode) {
-            err.statusCode = 500;
-        }
-        next(err);
-    })
+    } else {
+        const error = new Error('User is not allowed');
+        error.statusCode = 404;
+        throw error;
+    }
+    
 }
 
 exports.getPost = (req, res, next) => {

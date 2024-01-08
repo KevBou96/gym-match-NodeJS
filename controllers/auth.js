@@ -1,6 +1,7 @@
 
 const { validationResult } = require('express-validator');
 const Auth = require('../models/auth');
+const Users = require('../models/users')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const secret = require('../enviroment/enviroment-dev')
@@ -217,7 +218,27 @@ exports.postResetPassword = (req, res, next) => {
 
 exports.verifyUserAuth = (req, res, next) => {
     const userId = req.userId;
-    res.status(200).json({
-        userId
+    Users.getUserInfo(userId).then((user_data) => {
+        if (!user_data) {
+            const error = new Error('User do not exists');
+            error.statusCode = 404;
+            throw error
+        }
+        const user = {
+            userId: user_data.user_id,
+            firstName: user_data.first_name,
+            lastName: user_data.last_name,
+            email: user_data.email,
+            created_on: user_data.created_on
+        }
+        res.status(200).json({
+            user
+        })
+    }).catch(err => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err)
     })
+    
 }
