@@ -5,6 +5,8 @@ const path = require('path');
 const Posts = require('../models/posts');
 const { log } = require('console');
 
+const io = require('../util/socket');
+
 exports.getPosts = async (req, res, next) => {
     const user_id = req.userId;
     try {
@@ -41,6 +43,14 @@ exports.postPost = async (req, res, next) => {
     if (userId === verifiedUserId) {
         try {
             await Posts.createPost(title, content, imgurl, verifiedUserId);
+            const post = {
+                title,
+                content,
+                imgurl,
+                verifiedUserId,
+                created_data: new Date()
+            }
+            io.getIO().emit('posts', { action: 'create', post: post })
             res.status(201).json({
                 message: 'Post created succesfully',
             })

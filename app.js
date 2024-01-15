@@ -2,12 +2,14 @@ const path = require('path')
 const express = require('express');
 const bodyParser = require('body-parser')
 
+
 const multer  = require('multer');
 const { v4: uuidv4 } = require('uuid');
 
 
 const feedRoutes = require('./routes/feed');
-const authRoutes = require('./routes/auth')
+const authRoutes = require('./routes/auth');
+const { Server } = require('socket.io');
 
 
 const app = express();
@@ -58,4 +60,11 @@ app.use((error, req, res, next) => {
     })
 })
 
-app.listen(8080);
+const httpServer = app.listen(8080);
+const io = require('./util/socket').init(httpServer)
+io.on('connection', socket => {
+    console.log('Client connected');
+    socket.emit('msg', {
+        message: 'Hello', id: socket.id
+    })
+})
