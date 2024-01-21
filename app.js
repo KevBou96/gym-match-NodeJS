@@ -9,6 +9,7 @@ const { v4: uuidv4 } = require('uuid');
 
 const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user')
 const { Server } = require('socket.io');
 
 
@@ -50,7 +51,8 @@ app.use((req, res, next) => {
   });
 
 app.use('/feed', feedRoutes);
-app.use('/auth', authRoutes)
+app.use('/auth', authRoutes);
+app.use('/user', userRoutes);
 app.use((error, req, res, next) => {
     console.log(error);
     const status = error.statusCode || 500;

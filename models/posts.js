@@ -9,8 +9,8 @@ module.exports = class Posts {
         return db.none('INSERT INTO posts(post_title, post_content, created_data, imgurl, user_id) VALUES($1, $2, $3, $4, $5)',[title, content, new Date(), imgurl, user_id]);
     }
 
-    static getPosts(user_id) {
-        return db.manyOrNone('SELECT post_id, post_title, created_data FROM posts WHERE user_id = $1 ORDER BY post_id', [user_id]);
+    static getPosts() {
+        return db.manyOrNone('SELECT p.post_id, p.post_title, p.created_data, u.first_name, u.last_name FROM posts p INNER JOIN users u ON p.user_id = u.user_id ORDER BY created_data DESC');
     }
 
     static getPost(post_id, user_id) {

@@ -3,17 +3,16 @@ const fs = require('fs');
 const path = require('path');
 
 const Posts = require('../models/posts');
+const Users = require('../models/users');
 const { log } = require('console');
 
 const io = require('../util/socket');
 
 exports.getPosts = async (req, res, next) => {
-    const user_id = req.userId;
     try {
-        const posts = await Posts.getPosts(user_id);
-
+        const posts = await Posts.getPosts();
         res.status(200).json({
-            posts: posts
+            posts: posts,
         })
     } catch (err) {
         if (!err.statusCode) {
@@ -28,6 +27,8 @@ exports.postPost = async (req, res, next) => {
     const content = req.body.post_content;
     const userId = +req.body.user_id;
     const verifiedUserId = req.userId;
+    const first_name = req.body.first_name;
+    const last_name = req.body.last_name;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {  //if errors
         const error = new Error('Error: Validation Failed');
@@ -44,11 +45,11 @@ exports.postPost = async (req, res, next) => {
         try {
             await Posts.createPost(title, content, imgurl, verifiedUserId);
             const post = {
-                title,
-                content,
-                imgurl,
-                verifiedUserId,
-                created_data: new Date()
+                post_title: title,
+                post_id: verifiedUserId,
+                created_data: new Date(),
+                first_name,
+                last_name
             }
             io.getIO().emit('posts', { action: 'create', post: post })
             res.status(201).json({
