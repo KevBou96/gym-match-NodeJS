@@ -10,4 +10,6 @@ router.get('/get-user/:userId', isAuth.verifyUser, userController.getUser)
 
 router.post('/add-friend', isAuth.verifyUser, userController.postAddFriend)
 
+router.post('/check-if-friends', isAuth.verifyUser, userController.postCheckFriends)
+
 module.exports = router;
