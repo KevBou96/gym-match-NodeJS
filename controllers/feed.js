@@ -10,7 +10,7 @@ const io = require('../util/socket');
 
 exports.getPosts = async (req, res, next) => {
     try {
-        const posts = await Posts.getPosts();
+        const posts = await Posts.getAllPosts();
         res.status(200).json({
             posts: posts,
         })
@@ -19,6 +19,22 @@ exports.getPosts = async (req, res, next) => {
             err.statusCode = 500;
         }
         next(err)
+    }
+}
+
+exports.getUserPosts = async (req, res, next) => {
+    const user_id = req.params.userId;
+    try {
+        const posts = await Posts.getUserPosts(user_id);
+        res.status(200).json({
+            message: 'SUCCESS',
+            posts: posts
+        })
+    } catch(err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
     }
 }
 

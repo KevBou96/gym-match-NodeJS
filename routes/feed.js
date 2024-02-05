@@ -7,6 +7,8 @@ const isAuth = require('../middleware/is-auth');
 
 router.get('/posts', isAuth.verifyUser, feedController.getPosts);
 
+router.get('/posts/:userId', isAuth.verifyUser, feedController.getUserPosts)
+
 router.post('/post', isAuth.verifyUser,
 [
     body('post_title').trim().isLength({ min: 4 }),
@@ -15,6 +17,7 @@ router.post('/post', isAuth.verifyUser,
 feedController.postPost)
 
 router.get('/post/:postId', isAuth.verifyUser, feedController.getPost)
+
 
 router.delete('/post/:postId', isAuth.verifyUser, feedController.deletePost)
 

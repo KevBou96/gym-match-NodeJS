@@ -46,9 +46,9 @@ exports.getUser = async (req, res, next) => {
     }  
 }
 
-exports.postAddFriend = async (req, res, next) => {
-    const userId = req.body.userId;
-    const friendId = req.body.friendId;
+exports.postFriend = async (req, res, next) => {
+    const userId = req.userId;
+    const friendId = req.params.friendId;
     try {
         const checkResult = await Users.checkIfAlreadyFriends(userId, friendId);
         const isFriend = checkResult.exists;
@@ -71,8 +71,8 @@ exports.postAddFriend = async (req, res, next) => {
 }
 
 exports.postCheckFriends = async (req, res, next) => {
-    const userId = req.body.userId;
-    const friendId = req.body.friendId;
+    const userId = req.userId;
+    const friendId = req.params.friendId;
     try {
         const checkResult = await Users.checkIfAlreadyFriends(userId, friendId);
         const isFriend = checkResult.exists;
@@ -83,6 +83,30 @@ exports.postCheckFriends = async (req, res, next) => {
         }
         res.status(200).json({
             message: 'FRIENDS'
+        })
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;  
+        }
+        next(err)
+    }
+}
+
+exports.deleteFromFriends = async (req, res, next) => {
+    
+    const friendId = req.params.friendId;
+    const userId = req.userId;
+    try {
+        const checkResult = await Users.checkIfAlreadyFriends(userId, friendId);
+        const isFriend = checkResult.exists;
+        if (!isFriend) {
+            const error = new Error('FORBIDDEN');
+            error.statusCode = 403;
+            throw error
+        }
+        await Users.deleteFriend(userId, friendId);
+        res.status(200).json({
+            message: 'REQUEST_SUCCESS'
         })
     } catch (err) {
         if (!err.statusCode) {
