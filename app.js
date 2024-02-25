@@ -48,14 +48,11 @@ app.use((req, res, next) => {
         "Access-Control-Allow-Headers",
         "Origin, X-Requested-With, Content-type, Accept, Authorization"
     );
+    res.setHeader('Access-Control-Allow-Credentials', true);
     next();
   });
 
-app.use((req, res, next) => {
-    return res.status(200).json({
-        text: 'app is working fine'
-    })
-})
+
 
 app.use('/feed', feedRoutes);
 app.use('/auth', authRoutes);
