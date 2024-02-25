@@ -57,6 +57,12 @@ app.use((req, res, next) => {
 app.use('/feed', feedRoutes);
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
+
+app.get('/', (req, res, next) => {
+    res.send({
+        message: 'server is working'
+    })
+})
 app.use((error, req, res, next) => {
     console.log(error);
     const status = error.statusCode || 500;
