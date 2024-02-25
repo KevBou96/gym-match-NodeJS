@@ -1,5 +1,8 @@
 const { ValidationResult, validationResult} = require('express-validator');
 const Users = require('../models/users');
+const Notifications = require('../models/notifications');
+const { result } = require('../util/database');
+const io = require('../util/socket')
 
 exports.searchFriends = async (req, res, next) => {
     let searchTx = req.params.searchText;
@@ -57,7 +60,8 @@ exports.postFriend = async (req, res, next) => {
             error.statusCode = 422;
             throw error
         }
-        result = await Users.addFriend(userId, friendId);
+        let result = await Users.addFriend(userId, friendId);
+        addFriendAlert(userId, 'NEW_FRIEND');
         res.status(201).json({
             message: 'success',
             result
@@ -113,5 +117,14 @@ exports.deleteFromFriends = async (req, res, next) => {
             err.statusCode = 500;  
         }
         next(err)
+    }
+}
+
+const addFriendAlert = async (userId, type) => {
+    try {
+        let result = await Notifications.newFriendAlert(userId, type);
+        io.getIO().emit('notification', { action: type, result: result})
+    } catch (err) {
+        console.log(err, 'here');
     }
 }

@@ -1,7 +1,7 @@
 const path = require('path')
 const express = require('express');
 const bodyParser = require('body-parser')
-
+const helmet = require('helmet')
 
 const multer  = require('multer');
 const { v4: uuidv4 } = require('uuid');
@@ -32,6 +32,7 @@ const fileFilter = (req, file, cb) => {
     }
 }
 
+app.use(helmet())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({     parameterLimit: 100000,     limit: '50mb',     extended: true   }))
 app.use(multer({storage: fileStorage, fileFilter: fileFilter}).single('image'))
@@ -49,6 +50,12 @@ app.use((req, res, next) => {
     );
     next();
   });
+
+app.use((req, res, next) => {
+    return res.status(200).json({
+        text: 'app is working fine'
+    })
+})
 
 app.use('/feed', feedRoutes);
 app.use('/auth', authRoutes);
