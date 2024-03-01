@@ -58,9 +58,9 @@ app.use('/feed', feedRoutes);
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 
-app.get('/', (req, res, next) => {
+app.get('/', (req, res, nxt) => {
     res.send({
-        message: 'server is working'
+        message: 'server'
     })
 })
 app.use((error, req, res, next) => {

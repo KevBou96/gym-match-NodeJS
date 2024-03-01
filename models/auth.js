@@ -2,7 +2,7 @@
 const db = require('../util/database');
 const transport = require('../util/email-service');
 
-module.exports = class Posts {
+module.exports = class Auth {
     static saveUser(user) {
         return db.oneOrNone('INSERT INTO users(first_name, last_name, email, password, created_on, verified) VALUES($1, $2, $3, $4, $5, $6) RETURNING user_id',
         [user.firstName, user.lastName, user.email, user.hashedPassword, new Date(), false])

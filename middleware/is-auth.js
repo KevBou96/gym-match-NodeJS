@@ -11,7 +11,7 @@ const secret = require('../enviroment/enviroment-dev')
         throw err
     }
     if (!decodeToken) {
-        const error = new Error('Not unthenticated.');
+        const error = new Error('Not authenticated');
         error.statusCode = 401;
         throw error;
     }
@@ -22,7 +22,7 @@ const secret = require('../enviroment/enviroment-dev')
 exports.verifyUser = (req, res, next) => {
     const authHeader = req.get('Authorization');
     if (!authHeader) {
-        const error = new Error('Not unthenticated.');
+        const error = new Error('Not authenticated');
         error.statusCode = 401;
         throw error
     }
@@ -43,7 +43,7 @@ exports.verifyEmail = (req, res, next) => {
 exports.verifyResetPassword = (req, res, next) => {
     const authHeader = req.get('Authorization');
     if (!authHeader) {
-        const error = new Error('Not unthenticated');
+        const error = new Error('Not authenticated');
         error.statusCode = 401;
         throw error
     }
