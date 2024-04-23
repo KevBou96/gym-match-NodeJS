@@ -9,6 +9,8 @@ router.get('/posts', isAuth.verifyUser, feedController.getPosts);
 
 router.get('/posts/:userId', isAuth.verifyUser, feedController.getUserPosts)
 
+router.get('/post/:postId', isAuth.verifyUser, feedController.getPost)
+
 router.post('/post', isAuth.verifyUser,
 [
     body('post_title').trim().isLength({ min: 4 }),
@@ -16,9 +18,8 @@ router.post('/post', isAuth.verifyUser,
 ],
 feedController.postPost)
 
-router.get('/post/:postId', isAuth.verifyUser, feedController.getPost)
-
-
 router.delete('/post/:postId', isAuth.verifyUser, feedController.deletePost)
+
+router.post('/post/like', feedController.likePost)
 
 module.exports = router;

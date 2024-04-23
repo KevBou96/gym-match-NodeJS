@@ -21,6 +21,7 @@ const secret = require('../enviroment/enviroment-dev')
 
 exports.verifyUser = (req, res, next) => {
     const authHeader = req.get('Authorization');
+    
     if (!authHeader) {
         const error = new Error('Not authenticated');
         error.statusCode = 401;

@@ -130,7 +130,43 @@ exports.deletePost = async (req, res, next) => {
     }
 }
 
+exports.likePost = async (req, res, next) => {
+    const postId = req.body.post_id;
+    const userId = req.body.user_id;
+    const verifiedUserId = req.userId;
+    try {
+        const result = await Posts.checkLike(postId, userId);
+        if (result) {
+            try {
+                const likes_count = await Posts.likePost(postId);
+                return res.status(201).json({
+                    postId: postId,
+                    likes: likes_count.likes,
+                    message: 'POST_LIKED_SUCCESS'
+                })
+            } catch (err) {
+                if (!err.statusCode) {
+                    err.statusCode = 500;
+                }
+                next(err);
+            }
+        } else {
+            return res.status(200).json({
+                postId: postId,
+                message: 'POST_ALREADY_LIKED'
+            })
+        }
+    }
+    catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
+
 const clearImage = filePath => {
     filePath = path.join(__dirname, '..', filePath);
     fs.unlink(filePath, err => console.log(err));
 }
+
