@@ -165,6 +165,40 @@ exports.likePost = async (req, res, next) => {
     }
 }
 
+exports.dislikePost = async (req, res, next) => {
+    const postId = req.body.post_id;
+    const userId = req.body.user_id;
+    const verifiedUserId = req.userId;
+    try {
+        const result = await Posts.checkDislike(postId, userId);
+        if (result) {
+            try {
+                const count_dislike = await Posts.dislikePost(postId);
+                return res.status(201).json({
+                    postId: postId,
+                    dislikes: count_dislike.dislikes,
+                    message: 'POST_DISLIKE_SUCCESS'
+                })
+            } catch (err) {
+                if (!err.statusCode) {
+                    err.statusCode = 500;
+                }
+                next(err);
+            }
+        } else {
+            return res.status(200).json({
+                postId: postId,
+                message: 'POST_ALREADY_DISLIKED'
+            })
+        }
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    }
+}
+
 const clearImage = filePath => {
     filePath = path.join(__dirname, '..', filePath);
     fs.unlink(filePath, err => console.log(err));

@@ -10,7 +10,7 @@ module.exports = class Posts {
     }
 
     static getAllPosts() {
-        return db.manyOrNone('SELECT p.post_id, p.post_title, p.created_data, p.likes, p.user_id, u.first_name, u.last_name FROM posts p INNER JOIN users u ON p.user_id = u.user_id ORDER BY created_data DESC');
+        return db.manyOrNone('SELECT p.post_id, p.post_title, p.created_data, p.likes, p.dislikes, p.user_id, u.first_name, u.last_name FROM posts p INNER JOIN users u ON p.user_id = u.user_id ORDER BY created_data DESC');
     }
 
     static getPost(post_id, user_id) {
@@ -33,4 +33,12 @@ module.exports = class Posts {
     static likePost(post_id) {
         return db.oneOrNone('UPDATE posts SET likes = likes + 1 WHERE post_id = $1 RETURNING likes', [post_id])
     }
-}
+
+    static checkDislike(post_id, user_id) {
+        return db.oneOrNone('INSERT INTO feedback(disliked, post_id, user_id) values(true, $1, $2) on conflict (post_id, user_id) do nothing returning liked', [post_id, user_id])
+    }
+
+    static dislikePost(post_id) {
+        return db.oneOrNone('UPDATE posts SET dislikes = dislikes + 1 WHERE post_id = $1 RETURNING dislikes', [post_id])
+    }
+ }

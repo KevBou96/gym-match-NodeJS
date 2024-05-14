@@ -20,6 +20,8 @@ feedController.postPost)
 
 router.delete('/post/:postId', isAuth.verifyUser, feedController.deletePost)
 
-router.post('/post/like', feedController.likePost)
+router.post('/post/like', isAuth.verifyUser, feedController.likePost)
+
+router.post('/post/dislike', isAuth.verifyUser, feedController.dislikePost)
 
 module.exports = router;
