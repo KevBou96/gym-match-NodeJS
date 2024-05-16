@@ -7,12 +7,21 @@ const Users = require('../models/users');
 const { log } = require('console');
 
 const io = require('../util/socket');
+const { post } = require('../routes/feed');
 
 exports.getPosts = async (req, res, next) => {
+    const verified_user_id = req.userId;
     try {
-        const posts = await Posts.getAllPosts();
+        let isTrue = false;
+        const result = await Posts.getAllPosts(verified_user_id);
+        const posts = result[0];
+        const posts_liked = result[1];
+        if (posts_liked !== undefined || posts_liked.length !== 0) {
+            isTrue = modifyPosts(posts, posts_liked)
+        }
+        console.log(isTrue);
         res.status(200).json({
-            posts: posts,
+            posts,
         })
     } catch (err) {
         if (!err.statusCode) {
@@ -204,3 +213,9 @@ const clearImage = filePath => {
     fs.unlink(filePath, err => console.log(err));
 }
 
+const modifyPosts = (posts, posts_liked) => {
+    let posts_ids = posts.map(post => post.post_id);
+    let posts_liked_ids = posts_liked.map(post_liked => post_liked.post_id)
+    let isFound =  posts_ids.some(el => posts_liked_ids.includes(el));
+    return isFound;
+}
