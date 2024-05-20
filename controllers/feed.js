@@ -12,14 +12,11 @@ const { post } = require('../routes/feed');
 exports.getPosts = async (req, res, next) => {
     const verified_user_id = req.userId;
     try {
-        let isTrue = false;
         const result = await Posts.getAllPosts(verified_user_id);
-        const posts = result[0];
+        let posts = result[0];
         const posts_liked = result[1];
-        if (posts_liked !== undefined || posts_liked.length !== 0) {
-            isTrue = modifyPosts(posts, posts_liked)
-        }
-        console.log(isTrue);
+        const posts_disliked = result[2];
+        posts = modifyPosts(posts, posts_liked, posts_disliked);
         res.status(200).json({
             posts,
         })
@@ -142,30 +139,46 @@ exports.deletePost = async (req, res, next) => {
 exports.likePost = async (req, res, next) => {
     const postId = req.body.post_id;
     const userId = req.body.user_id;
+    const likeStatus = req.body.likeStatus;
     const verifiedUserId = req.userId;
     try {
-        const result = await Posts.checkLike(postId, userId);
-        if (result) {
-            try {
-                const likes_count = await Posts.likePost(postId);
-                return res.status(201).json({
-                    postId: postId,
-                    likes: likes_count.likes,
-                    message: 'POST_LIKED_SUCCESS'
-                })
-            } catch (err) {
-                if (!err.statusCode) {
-                    err.statusCode = 500;
-                }
-                next(err);
-            }
+        if (likeStatus == false) {
+            const result = await Posts.likePost(postId, userId)
+            res.status(200).json({
+                message: 'LIKED_SUCCESS',
+                likes_count: result[0].likes
+            })
         } else {
-            return res.status(200).json({
-                postId: postId,
-                message: 'POST_ALREADY_LIKED'
+            const result = await Posts.unLikePost(postId, userId)
+            res.status(200).json({
+                message: 'UNLIKED_SUCCESS',
+                likes_count: result[0].likes
             })
         }
     }
+    // try {
+    //     const result = await Posts.checkLike(postId, userId);
+    //     if (result) {
+    //         try {
+    //             const likes_count = await Posts.likePost(postId);
+    //             return res.status(201).json({
+    //                 postId: postId,
+    //                 likes: likes_count.likes,
+    //                 message: 'POST_LIKED_SUCCESS'
+    //             })
+    //         } catch (err) {
+    //             if (!err.statusCode) {
+    //                 err.statusCode = 500;
+    //             }
+    //             next(err);
+    //         }
+    //     } else {
+    //         return res.status(200).json({
+    //             postId: postId,
+    //             message: 'POST_ALREADY_LIKED'
+    //         })
+    //     }
+    // }
     catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
@@ -177,30 +190,48 @@ exports.likePost = async (req, res, next) => {
 exports.dislikePost = async (req, res, next) => {
     const postId = req.body.post_id;
     const userId = req.body.user_id;
+    const dislikeStatus = req.body.dislikeStatus;
     const verifiedUserId = req.userId;
     try {
-        const result = await Posts.checkDislike(postId, userId);
-        if (result) {
-            try {
-                const count_dislike = await Posts.dislikePost(postId);
-                return res.status(201).json({
-                    postId: postId,
-                    dislikes: count_dislike.dislikes,
-                    message: 'POST_DISLIKE_SUCCESS'
-                })
-            } catch (err) {
-                if (!err.statusCode) {
-                    err.statusCode = 500;
-                }
-                next(err);
-            }
+        if (dislikeStatus == false) {
+            const result = await Posts.dislikePost(postId, userId);
+            res.status(200).json({
+                message: 'DISLIKED_SUCCESS',
+                dislikes_count: result.dislikes
+            })
         } else {
-            return res.status(200).json({
-                postId: postId,
-                message: 'POST_ALREADY_DISLIKED'
+            const result = await Posts.unDislikePost(postId, userId)
+            res.status(200).json({
+                message: 'UNDISLIKED_SUCCESS',
+                dislikes_count: result[0].dislikes
             })
         }
-    } catch (err) {
+    }
+
+    // try {
+    //     const result = await Posts.checkDislike(postId, userId);
+    //     if (result) {
+    //         try {
+    //             const count_dislike = await Posts.dislikePost(postId);
+    //             return res.status(201).json({
+    //                 postId: postId,
+    //                 dislikes: count_dislike.dislikes,
+    //                 message: 'POST_DISLIKE_SUCCESS'
+    //             })
+    //         } catch (err) {
+    //             if (!err.statusCode) {
+    //                 err.statusCode = 500;
+    //             }
+    //             next(err);
+    //         }
+    //     } else {
+    //         return res.status(200).json({
+    //             postId: postId,
+    //             message: 'POST_ALREADY_DISLIKED'
+    //         })
+    //     }
+    // } 
+    catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
@@ -213,9 +244,15 @@ const clearImage = filePath => {
     fs.unlink(filePath, err => console.log(err));
 }
 
-const modifyPosts = (posts, posts_liked) => {
-    let posts_ids = posts.map(post => post.post_id);
+const modifyPosts = (posts, posts_liked, posts_disliked) => {
     let posts_liked_ids = posts_liked.map(post_liked => post_liked.post_id)
-    let isFound =  posts_ids.some(el => posts_liked_ids.includes(el));
-    return isFound;
+    let modifiedPosts = posts.map(post => {
+        return { ...post, liked: posts_liked_ids.includes(post.post_id)? true : false}
+    });
+
+    let posts_disliked_ids = posts_disliked.map(post_disliked => post_disliked.post_id);
+    modifiedPosts = modifiedPosts.map(post => {
+        return { ...post, disliked: posts_disliked_ids.includes(post.post_id)? true : false}
+    })
+    return modifiedPosts;
 }

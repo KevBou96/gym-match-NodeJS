@@ -13,12 +13,12 @@ module.exports = class Posts {
     //     return db.manyOrNone('SELECT p.post_id, p.post_title, p.created_data, p.likes, p.dislikes, p.user_id, u.first_name, u.last_name FROM posts p INNER JOIN users u ON p.user_id = u.user_id ORDER BY created_data DESC');
     // }
 
-    static getAllPosts(user_id) {
-        console.log(user_id);
+    static getAllPosts(user_id) {;
         return db.tx(t => {
             const getPosts = t.any('SELECT p.post_id, p.post_title, p.created_data, p.likes, p.dislikes, p.user_id, u.first_name, u.last_name FROM posts p INNER JOIN users u ON p.user_id = u.user_id ORDER BY created_data DESC');
             const getPostsLikedByUser = t.any('SELECT feedback_id, post_id from likes where user_id = $1', user_id);
-            return t.batch([getPosts, getPostsLikedByUser]);
+            const getPostsDislikedByUser = t.any('SELECT dislike_id, post_id from dislikes where user_id = $1', user_id);
+            return t.batch([getPosts, getPostsLikedByUser, getPostsDislikedByUser]);
         })
         
     }
@@ -36,12 +36,36 @@ module.exports = class Posts {
         [user_id]);
     }
 
-    static checkLike(post_id, user_id) {
-        return db.oneOrNone('INSERT INTO likes(post_id, user_id) values($1, $2) on conflict (post_id, user_id) do nothing RETURNING feedback_id', [post_id, user_id])
+    static likePost(post_id, user_id) {
+        return db.tx(t => {
+            const increaseLikeCount = t.oneOrNone('UPDATE posts SET likes = likes + 1 WHERE post_id = $1 returning likes', [post_id]);
+            const createUserLike = t.none('INSERT INTO likes(post_id, user_id) values($1, $2)', [post_id, user_id]);
+            return t.batch([increaseLikeCount, createUserLike])
+        })
     }
 
-    static likePost(post_id) {
-        return db.oneOrNone('UPDATE posts SET likes = likes + 1 WHERE post_id = $1 RETURNING likes', [post_id])
+    static unLikePost(post_id, user_id) {
+        return db.tx(t => {
+            const decreaseLikeCount = t.oneOrNone('UPDATE posts SET likes = likes - 1 WHERE post_id = $1 returning likes', [post_id]);
+            const deleteUserLike = t.none('DELETE FROM likes WHERE post_id = $1 AND user_id = $2', [post_id, user_id]);
+            return t.batch([decreaseLikeCount, deleteUserLike])
+        })
+    }
+
+    static dislikePost(post_id, user_id) {
+        return db.tx(t => {
+            const increaseDislikeCount = t.oneOrNone('UPDATE posts SET dislikes = dislikes + 1 WHERE post_id = $1 returning dislikes', [post_id]);
+            const createUserDislike = t.none('INSERT INTO dislikes(post_id, user_id) values($1, $2)', [post_id, user_id]);
+            return t.batch([increaseDislikeCount, createUserDislike])
+        })
+    }
+
+    static unDislikePost(post_id, user_id) {
+        return db.tx(t => {
+            const decreaseDislikeCount = t.oneOrNone('UPDATE posts SET dislikes = dislikes - 1 WHERE post_id = $1 returning dislikes', [post_id]);
+            const deleteUserDislike = t.none('DELETE FROM dislikes WHERE post_id = $1 AND user_id = $2', [post_id, user_id]);
+            return t.batch([decreaseDislikeCount, deleteUserDislike])
+        })
     }
 
     static checkDislike(post_id, user_id) {
